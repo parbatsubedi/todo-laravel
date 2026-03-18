@@ -12,9 +12,11 @@ class TodoController extends Controller
     /**
      * Display a listing of the resource (user's todos).
      */
-    public function index(): JsonResponse
+    public function index()
     {
-        $todos = Auth::user()->todos()->latest()->get();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $todos = $user->todos()->with('user')->latest()->get();
 
         return response()->json($todos);
     }
@@ -22,15 +24,17 @@ class TodoController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'completed' => 'boolean',
         ]);
 
-        $todo = Auth::user()->todos()->create($request->validated());
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $todo = $user->todos()->create($validated);
 
         return response()->json($todo, 201);
     }
@@ -38,7 +42,7 @@ class TodoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Todo $todo): JsonResponse
+    public function show(Todo $todo)
     {
         if ($todo->user_id !== Auth::id()) {
             abort(403);
@@ -50,7 +54,7 @@ class TodoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Todo $todo): JsonResponse
+    public function update(Request $request, Todo $todo)
     {
         if ($todo->user_id !== Auth::id()) {
             abort(403);
@@ -70,7 +74,7 @@ class TodoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Todo $todo): JsonResponse
+    public function destroy(Todo $todo)
     {
         if ($todo->user_id !== Auth::id()) {
             abort(403);
