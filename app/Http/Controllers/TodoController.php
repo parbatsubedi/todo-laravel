@@ -18,7 +18,11 @@ class TodoController extends Controller
         $user = Auth::user();
         $todos = $user->todos()->with('user')->latest()->get();
 
-        return response()->json($todos);
+        return response()->json([
+            "status" => true,
+            "message" => "Todos fetched successfully",
+            "data" => $todos
+        ]);
     }
 
     /**
@@ -60,15 +64,19 @@ class TodoController extends Controller
             abort(403);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'string|max:255',
             'description' => 'nullable|string',
             'completed' => 'boolean',
         ]);
 
-        $todo->update($request->validated());
+        $todo->update($validated);
 
-        return response()->json($todo);
+        return response()->json([
+            "status" => true,
+            "message" => "Todo updated successfully",
+            "data" => $todo
+        ]);
     }
 
     /**
@@ -82,7 +90,11 @@ class TodoController extends Controller
 
         $todo->delete();
 
-        return response()->json(null, 204);
+        return response()->json([
+            "status" => true,
+            "message" => "Todo deleted successfully",
+            "data" => null
+        ]);
     }
 }
 
